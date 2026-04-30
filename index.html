@@ -297,6 +297,22 @@ header.scrolled {
   color: var(--red);
   box-shadow: var(--glow-red);
 }
+.h-fav {
+  position: relative; flex-shrink: 0;
+  width: 44px; height: 44px; border-radius: 50%;
+  background: var(--glass);
+  border: 1px solid var(--glass-border);
+  display: flex; align-items: center; justify-content: center;
+  color: var(--text); font-size: 17px;
+  transition: var(--t);
+}
+.h-fav:hover,
+.h-fav.active {
+  background: var(--glass-red);
+  border-color: var(--red);
+  color: var(--red);
+  box-shadow: var(--glow-red);
+}
 .h-cart-badge {
   position: absolute; top: -3px; left: -3px;
   width: 19px; height: 19px; border-radius: 50%;
@@ -306,7 +322,17 @@ header.scrolled {
   border: 2px solid var(--bg-1);
   animation: badgePop 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
 }
+.h-fav-badge {
+  position: absolute; top: -3px; left: -3px;
+  width: 19px; height: 19px; border-radius: 50%;
+  background: var(--red);
+  font-size: 10px; font-weight: 800;
+  display: none; align-items: center; justify-content: center;
+  border: 2px solid var(--bg-1);
+  animation: badgePop 0.3s cubic-bezier(0.175,0.885,0.32,1.275);
+}
 .h-cart-badge.show { display: flex; }
+.h-fav-badge.show { display: flex; }
 @keyframes badgePop { from{transform:scale(0);} to{transform:scale(1);} }
 
 /* ══════════════════════════════════════════════
@@ -646,6 +672,21 @@ header.scrolled {
   padding: 3px 10px; border-radius: 100px;
   letter-spacing: 0.5px;
 }
+.prod-fav {
+  position: absolute; top: 10px; left: 10px;
+  width: 34px; height: 34px; border-radius: 50%;
+  background: rgba(255,255,255,0.9);
+  border: 1px solid rgba(0,0,0,0.1);
+  color: var(--text-dim);
+  display: flex; align-items: center; justify-content: center;
+  transition: var(--t-fast);
+}
+.prod-fav:hover { color: var(--red); border-color: var(--red); }
+.prod-fav.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--red-deep), var(--red));
+  border-color: transparent;
+}
 .prod-quick {
   position: absolute; bottom: 10px; left: 10px; right: 10px;
   background: linear-gradient(135deg, var(--red-deep), var(--red));
@@ -761,6 +802,29 @@ header.scrolled {
   box-shadow: 0 6px 22px rgba(7,202,107,0.3);
 }
 .modal-add:active { transform: translateY(0); }
+.modal-actions {
+  display: flex;
+  gap: 10px;
+  align-items: stretch;
+}
+.modal-fav {
+  width: 62px;
+  border: 1px solid rgba(0,0,0,0.12);
+  border-radius: var(--r);
+  background: var(--bg-1);
+  color: var(--text-dim);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 20px;
+  transition: var(--t);
+}
+.modal-fav:hover { color: var(--red); border-color: var(--red); background: var(--glass-red); }
+.modal-fav.active {
+  color: #fff;
+  background: linear-gradient(135deg, var(--red-deep), var(--red));
+  border-color: transparent;
+}
 
 /* ══════════════════════════════════════════════
    CART SIDEBAR
@@ -1046,6 +1110,10 @@ footer {
       <i class="fas fa-magnifying-glass h-search-icon"></i>
     </div>
 
+    <button class="h-fav" id="favBtn" onclick="favTogglePanel()">
+      <i class="fas fa-heart"></i>
+      <span class="h-fav-badge" id="favBadge">0</span>
+    </button>
     <button class="h-cart" onclick="cartToggle()">
       <i class="fas fa-cart-shopping"></i>
       <span class="h-cart-badge" id="cartBadge">0</span>
@@ -1191,9 +1259,14 @@ footer {
       <h2 class="modal-name" id="mName"></h2>
       <div class="modal-price" id="mPrice"></div>
       <p class="modal-desc" id="mDesc"></p>
-      <button class="modal-add" id="mAddBtn" onclick="modalAddCart()">
-        <i class="fas fa-cart-plus"></i> إضافة إلى السلة
-      </button>
+      <div class="modal-actions">
+        <button class="modal-fav" id="mFavBtn" onclick="modalToggleFav()" title="إضافة للمفضلة">
+          <i class="fas fa-heart"></i>
+        </button>
+        <button class="modal-add" id="mAddBtn" onclick="modalAddCart()">
+          <i class="fas fa-cart-plus"></i> إضافة إلى السلة
+        </button>
+      </div>
     </div>
   </div>
 </div>
@@ -1230,8 +1303,31 @@ footer {
   </div>
 </div>
 
+<!-- ══════════════════════════════════════════
+     FAVORITES SIDEBAR
+     ══════════════════════════════════════════ -->
+<div class="cart-bg" id="favBg" onclick="if(event.target===this)favTogglePanel()">
+  <div class="cart-panel">
+    <div class="cart-head">
+      <div class="cart-head-title">
+        <i class="fas fa-heart"></i>
+        <span>المفضلة</span>
+      </div>
+      <button class="cart-head-close" onclick="favTogglePanel()"><i class="fas fa-xmark"></i></button>
+    </div>
+    <div class="cart-body" id="favBody">
+      <div class="cart-empty-msg">
+        <i class="fas fa-heart"></i>
+        <p>المفضلة فارغة حالياً</p>
+        <small>اضغط على قلب المنتج لإضافته هنا</small>
+      </div>
+    </div>
+  </div>
+</div>
+
 <div id="toasts"></div>
 
+<script src="products_data.js"></script>
 <script>
 "use strict";
 
@@ -1260,7 +1356,7 @@ const CATEGORIES = [
 const PRODUCTS = [
   { id: 1, categoryId: "engine", name: "طرمبة ماية 2000 تربو avortex", price: 3000, qty: 1, image: "https://placehold.co/600x400/200808/FF4444?text=طرمبة+ماية+2000+تر", description: "طرمبة ماية 2000 تربو avortex — " },
   { id: 2, categoryId: "engine", name: "طرمبة ماية 1600 avortex", price: 2250, qty: 1, image: "https://placehold.co/600x400/200808/FF4444?text=طرمبة+ماية+1600+av", description: "طرمبة ماية 1600 avortex — " },
-  { id: 3, categoryId: "engine", name: "بيض مقص الماني MS", price: 1000, qty: 5, image: "https://placehold.co/600x400/200808/FF4444?text=بيض+مقص+الماني+MS", description: "بيض مقص الماني MS — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 3, categoryId: "engine", name: "بيض مقص الماني MS", price: 1000, qty: 5, image: "https://placehold.co/600x400/200808/FF4444?text=بيض+مقص+الماني+MS", description: "بيض مقص الماني MS — الكمية المتاحة: 5" },
   { id: 4, categoryId: "cooling", name: "قربة مياه مسحات جولف  A7     B8", price: 1375, qty: 1, image: "https://placehold.co/600x400/081820/44AAFF?text=قربة+مياه+مسحات+جو", description: "قربة مياه مسحات جولف  A7     B8 — " },
   { id: 5, categoryId: "engine", name: "موبينة 4 رجل 1600 a5", price: 1550, qty: 1, image: "https://placehold.co/600x400/200808/FF4444?text=موبينة+4+رجل+1600+", description: "موبينة 4 رجل 1600 a5 — " },
   { id: 6, categoryId: "electrical", name: "حساس كامة CCZ علبة بيج", price: 2500, qty: 1, image: "https://placehold.co/600x400/141408/FFCC22?text=حساس+كامة+CCZ+علبة", description: "حساس كامة CCZ علبة بيج — " },
@@ -1276,22 +1372,22 @@ const PRODUCTS = [
   { id: 17, categoryId: "suspension", name: "صرة عجل امامي  3 مسمار يباني", price: 1650, qty: 2, image: "https://placehold.co/600x400/081818/44CCAA?text=صرة+عجل+امامي++3+م", description: "صرة عجل امامي  3 مسمار يباني — " },
   { id: 18, categoryId: "suspension", name: "صرة عجل خلفي يباني ِA5", price: 1450, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=صرة+عجل+خلفي+يباني", description: "صرة عجل خلفي يباني ِA5 — " },
   { id: 19, categoryId: "cooling", name: "خرطوم سرفو A5", price: 1000, qty: 1, image: "https://placehold.co/600x400/081820/44AAFF?text=خرطوم+سرفو+A5", description: "خرطوم سرفو A5 — " },
-  { id: 20, categoryId: "body", name: "طببة مسمار عجل", price: 100, qty: 20, image: "https://placehold.co/600x400/101820/FF9977?text=طببة+مسمار+عجل", description: "طببة مسمار عجل — ", badge: "متوفر" },
-  { id: 21, categoryId: "body", name: "طقم مقبض بي قاعدة سيخ الكبوت", price: 125, qty: 5, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+مقبض+بي+قاعدة+", description: "طقم مقبض بي قاعدة سيخ الكبوت — الكمية المتاحة: 5", badge: "متوفر" },
-  { id: 22, categoryId: "body", name: "يد كرسي", price: 250, qty: 8, image: "https://placehold.co/600x400/101820/FF9977?text=يد+كرسي", description: "يد كرسي — الكمية المتاحة: 8", badge: "متوفر" },
+  { id: 20, categoryId: "body", name: "طببة مسمار عجل", price: 100, qty: 20, image: "https://placehold.co/600x400/101820/FF9977?text=طببة+مسمار+عجل", description: "طببة مسمار عجل — " },
+  { id: 21, categoryId: "body", name: "طقم مقبض بي قاعدة سيخ الكبوت", price: 125, qty: 5, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+مقبض+بي+قاعدة+", description: "طقم مقبض بي قاعدة سيخ الكبوت — الكمية المتاحة: 5" },
+  { id: 22, categoryId: "body", name: "يد كرسي", price: 250, qty: 8, image: "https://placehold.co/600x400/101820/FF9977?text=يد+كرسي", description: "يد كرسي — الكمية المتاحة: 8" },
   { id: 23, categoryId: "filters", name: "فلتر تكييف ِA7 MS", price: 450, qty: 1, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+تكييف+ِA7+MS", description: "فلتر تكييف ِA7 MS — " },
-  { id: 24, categoryId: "filters", name: "فلتر هوا A5", price: 300, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+هوا+A5", description: "فلتر هوا A5 — 0", badge: "متوفر" },
+  { id: 24, categoryId: "filters", name: "فلتر هوا A5", price: 300, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+هوا+A5", description: "فلتر هوا A5 — 0" },
   { id: 25, categoryId: "filters", name: "فلتر هوا 1400 سوبر شارج UFI", price: 450, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+هوا+1400+سوبر", description: "فلتر هوا 1400 سوبر شارج UFI — " },
   { id: 26, categoryId: "filters", name: "فلتر فتيس A7", price: 450, qty: 1, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+فتيس+A7", description: "فلتر فتيس A7 — " },
-  { id: 27, categoryId: "filters", name: "فلتر هوا الطويل 2000 تربو", price: 450, qty: 5, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+هوا+الطويل+20", description: "فلتر هوا الطويل 2000 تربو — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 27, categoryId: "filters", name: "فلتر هوا الطويل 2000 تربو", price: 450, qty: 5, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+هوا+الطويل+20", description: "فلتر هوا الطويل 2000 تربو — الكمية المتاحة: 5" },
   { id: 28, categoryId: "filters", name: "فلتر هوا A7 1600", price: 350, qty: 3, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+هوا+A7+1600", description: "فلتر هوا A7 1600 — " },
   { id: 29, categoryId: "filters", name: "فلتر زيت اودي بصاموله", price: 450, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+اودي+بصام", description: "فلتر زيت اودي بصاموله — " },
   { id: 30, categoryId: "filters", name: "فلتر زيت طويل بصامولة بورشينج A7", price: 425, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+طويل+بصام", description: "فلتر زيت طويل بصامولة بورشينج A7 — " },
-  { id: 31, categoryId: "filters", name: "فلتر زيت بوش اصلي TSI", price: 550, qty: 5, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+بوش+اصلي+", description: "فلتر زيت بوش اصلي TSI — الكمية المتاحة: 5", badge: "متوفر" },
-  { id: 32, categoryId: "filters", name: "فلتر زيت بي صاموله 1400 TSI", price: 525, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+بي+صاموله", description: "فلتر زيت بي صاموله 1400 TSI — 0", badge: "متوفر" },
-  { id: 33, categoryId: "filters", name: "فلتر زيت طويل", price: 275, qty: 9, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+طويل", description: "فلتر زيت طويل — الكمية المتاحة: 9", badge: "متوفر" },
-  { id: 34, categoryId: "filters", name: "فلتر زيت A7", price: 400, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+A7", description: "فلتر زيت A7 — 0", badge: "متوفر" },
-  { id: 35, categoryId: "filters", name: "فلتر زيت 1400 تربو MS", price: 450, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+1400+تربو", description: "فلتر زيت 1400 تربو MS — 0", badge: "متوفر" },
+  { id: 31, categoryId: "filters", name: "فلتر زيت بوش اصلي TSI", price: 550, qty: 5, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+بوش+اصلي+", description: "فلتر زيت بوش اصلي TSI — الكمية المتاحة: 5" },
+  { id: 32, categoryId: "filters", name: "فلتر زيت بي صاموله 1400 TSI", price: 525, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+بي+صاموله", description: "فلتر زيت بي صاموله 1400 TSI — 0" },
+  { id: 33, categoryId: "filters", name: "فلتر زيت طويل", price: 275, qty: 9, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+طويل", description: "فلتر زيت طويل — الكمية المتاحة: 9" },
+  { id: 34, categoryId: "filters", name: "فلتر زيت A7", price: 400, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+A7", description: "فلتر زيت A7 — 0" },
+  { id: 35, categoryId: "filters", name: "فلتر زيت 1400 تربو MS", price: 450, qty: 10, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+1400+تربو", description: "فلتر زيت 1400 تربو MS — 0" },
   { id: 36, categoryId: "filters", name: "فلتر زيت 2000 TSI", price: 500, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+زيت+2000+TSI", description: "فلتر زيت 2000 TSI — " },
   { id: 37, categoryId: "suspension", name: "شداد ميزان اودي", price: 650, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=شداد+ميزان+اودي", description: "شداد ميزان اودي — " },
   { id: 38, categoryId: "suspension", name: "شداد فتيس B6", price: 600, qty: 2, image: "https://placehold.co/600x400/081818/44CCAA?text=شداد+فتيس+B6", description: "شداد فتيس B6 — " },
@@ -1299,7 +1395,7 @@ const PRODUCTS = [
   { id: 40, categoryId: "suspension", name: "شداد فتيس A7 الاسود", price: 750, qty: 4, image: "https://placehold.co/600x400/081818/44CCAA?text=شداد+فتيس+A7+الاسو", description: "شداد فتيس A7 الاسود — " },
   { id: 41, categoryId: "suspension", name: "طقم تيش ميزان امامي تركي A5", price: 850, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=طقم+تيش+ميزان+امام", description: "طقم تيش ميزان امامي تركي A5 — " },
   { id: 42, categoryId: "suspension", name: "طقم تيش ميزان خلفي A5", price: 650, qty: 3, image: "https://placehold.co/600x400/081818/44CCAA?text=طقم+تيش+ميزان+خلفي", description: "طقم تيش ميزان خلفي A5 — " },
-  { id: 43, categoryId: "suspension", name: "تيش ميزان امامي A5", price: 850, qty: 5, image: "https://placehold.co/600x400/081818/44CCAA?text=تيش+ميزان+امامي+A5", description: "تيش ميزان امامي A5 — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 43, categoryId: "suspension", name: "تيش ميزان امامي A5", price: 850, qty: 5, image: "https://placehold.co/600x400/081818/44CCAA?text=تيش+ميزان+امامي+A5", description: "تيش ميزان امامي A5 — الكمية المتاحة: 5" },
   { id: 44, categoryId: "suspension", name: "قاعدة موتور بسات B6 سواج كوبي", price: 1500, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=قاعدة+موتور+بسات+B", description: "قاعدة موتور بسات B6 سواج كوبي — " },
   { id: 45, categoryId: "suspension", name: "قاعدة موتور A5 سواج كوبي", price: 1400, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=قاعدة+موتور+A5+سوا", description: "قاعدة موتور A5 سواج كوبي — " },
   { id: 46, categoryId: "suspension", name: "قاعدة موتور تيجوان سواج كوبي", price: 2000, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=قاعدة+موتور+تيجوان", description: "قاعدة موتور تيجوان سواج كوبي — " },
@@ -1314,7 +1410,7 @@ const PRODUCTS = [
   { id: 55, categoryId: "engine", name: "كفر كاتينة فبر TSI", price: 1500, qty: 1, image: "https://placehold.co/600x400/200808/FF4444?text=كفر+كاتينة+فبر+TSI", description: "كفر كاتينة فبر TSI — " },
   { id: 56, categoryId: "engine", name: "كفر كاتينة TSI المنيوم", price: 2000, qty: 1, image: "https://placehold.co/600x400/200808/FF4444?text=كفر+كاتينة+TSI+الم", description: "كفر كاتينة TSI المنيوم — " },
   { id: 57, categoryId: "engine", name: "مبخر زيت 2000 تربو", price: 1250, qty: 2, image: "https://placehold.co/600x400/200808/FF4444?text=مبخر+زيت+2000+تربو", description: "مبخر زيت 2000 تربو — " },
-  { id: 58, categoryId: "engine", name: "كوعة عمة A5", price: 600, qty: 5, image: "https://placehold.co/600x400/200808/FF4444?text=كوعة+عمة+A5", description: "كوعة عمة A5 — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 58, categoryId: "engine", name: "كوعة عمة A5", price: 600, qty: 5, image: "https://placehold.co/600x400/200808/FF4444?text=كوعة+عمة+A5", description: "كوعة عمة A5 — الكمية المتاحة: 5" },
   { id: 59, categoryId: "filters", name: "كباية فلتر فتيس 6 DSG نيكل", price: 600, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=كباية+فلتر+فتيس+6+", description: "كباية فلتر فتيس 6 DSG نيكل — " },
   { id: 60, categoryId: "filters", name: "كباية فلتر فتيس 6 DSG فبر", price: 550, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=كباية+فلتر+فتيس+6+", description: "كباية فلتر فتيس 6 DSG فبر — " },
   { id: 61, categoryId: "engine", name: "جوان غطة تكيهات 2000 تربو", price: 500, qty: 3, image: "https://placehold.co/600x400/200808/FF4444?text=جوان+غطة+تكيهات+20", description: "جوان غطة تكيهات 2000 تربو — " },
@@ -1326,8 +1422,8 @@ const PRODUCTS = [
   { id: 67, categoryId: "body", name: "طقم كلاكسات", price: 1000, qty: 0, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+كلاكسات", description: "طقم كلاكسات — ", badge: "نفدت الكمية" },
   { id: 68, categoryId: "transmission", name: "عصاية فتيس كاملة A5", price: 2650, qty: 2, image: "https://placehold.co/600x400/181808/FFAA44?text=عصاية+فتيس+كاملة+A", description: "عصاية فتيس كاملة A5 — " },
   { id: 69, categoryId: "filters", name: "فلتر فتيس A5", price: 350, qty: 2, image: "https://placehold.co/600x400/082008/44BB66?text=فلتر+فتيس+A5", description: "فلتر فتيس A5 — " },
-  { id: 70, categoryId: "body", name: "يد فتح كبوت", price: 150, qty: 9, image: "https://placehold.co/600x400/101820/FF9977?text=يد+فتح+كبوت", description: "يد فتح كبوت — الكمية المتاحة: 9", badge: "متوفر" },
-  { id: 71, categoryId: "body", name: "قاعدة فتح الكبوت", price: 200, qty: 6, image: "https://placehold.co/600x400/101820/FF9977?text=قاعدة+فتح+الكبوت", description: "قاعدة فتح الكبوت — ", badge: "متوفر" },
+  { id: 70, categoryId: "body", name: "يد فتح كبوت", price: 150, qty: 9, image: "https://placehold.co/600x400/101820/FF9977?text=يد+فتح+كبوت", description: "يد فتح كبوت — الكمية المتاحة: 9" },
+  { id: 71, categoryId: "body", name: "قاعدة فتح الكبوت", price: 200, qty: 6, image: "https://placehold.co/600x400/101820/FF9977?text=قاعدة+فتح+الكبوت", description: "قاعدة فتح الكبوت — " },
   { id: 72, categoryId: "cooling", name: "غطاء قربة مياه ازرق A5", price: 250, qty: 4, image: "https://placehold.co/600x400/081820/44AAFF?text=غطاء+قربة+مياه+ازر", description: "غطاء قربة مياه ازرق A5 — " },
   { id: 73, categoryId: "transmission", name: "كولر فتيس A5", price: 1500, qty: 1, image: "https://placehold.co/600x400/181808/FFAA44?text=كولر+فتيس+A5", description: "كولر فتيس A5 — " },
   { id: 74, categoryId: "transmission", name: "كولر فتيس A8", price: 2500, qty: 1, image: "https://placehold.co/600x400/181808/FFAA44?text=كولر+فتيس+A8", description: "كولر فتيس A8 — " },
@@ -1359,19 +1455,19 @@ const PRODUCTS = [
   { id: 100, categoryId: "electrical", name: "ريش مسحات خلفي", price: 200, qty: 1, image: "https://placehold.co/600x400/141408/FFCC22?text=ريش+مسحات+خلفي", description: "ريش مسحات خلفي — " },
   { id: 101, categoryId: "electrical", name: "ريش مسحات امامي", price: 400, qty: 2, image: "https://placehold.co/600x400/141408/FFCC22?text=ريش+مسحات+امامي", description: "ريش مسحات امامي — " },
   { id: 102, categoryId: "engine", name: "مقاس زيت 2000 تربو BWA", price: 250, qty: 4, image: "https://placehold.co/600x400/200808/FF4444?text=مقاس+زيت+2000+تربو", description: "مقاس زيت 2000 تربو BWA — " },
-  { id: 103, categoryId: "engine", name: "بستم طرمبة 2000 تربو", price: 650, qty: 8, image: "https://placehold.co/600x400/200808/FF4444?text=بستم+طرمبة+2000+تر", description: "بستم طرمبة 2000 تربو — الكمية المتاحة: 8", badge: "متوفر" },
+  { id: 103, categoryId: "engine", name: "بستم طرمبة 2000 تربو", price: 650, qty: 8, image: "https://placehold.co/600x400/200808/FF4444?text=بستم+طرمبة+2000+تر", description: "بستم طرمبة 2000 تربو — الكمية المتاحة: 8" },
   { id: 104, categoryId: "body", name: "جراب نضارة جيتا بيج", price: 900, qty: 1, image: "https://placehold.co/600x400/101820/FF9977?text=جراب+نضارة+جيتا+بي", description: "جراب نضارة جيتا بيج — " },
   { id: 105, categoryId: "body", name: "جراب نضارة A7 رمادي جديد", price: 1050, qty: 1, image: "https://placehold.co/600x400/101820/FF9977?text=جراب+نضارة+A7+رماد", description: "جراب نضارة A7 رمادي جديد — " },
   { id: 106, categoryId: "electrical", name: "ماطور مسحات سواج", price: 450, qty: 2, image: "https://placehold.co/600x400/141408/FFCC22?text=ماطور+مسحات+سواج", description: "ماطور مسحات سواج — " },
   { id: 107, categoryId: "electrical", name: "حساس شكمان A7 جديد", price: 2000, qty: 1, image: "https://placehold.co/600x400/141408/FFCC22?text=حساس+شكمان+A7+جديد", description: "حساس شكمان A7 جديد — " },
   { id: 108, categoryId: "body", name: "درج كونسولة بسات اسود و بيج", price: 850, qty: 2, image: "https://placehold.co/600x400/101820/FF9977?text=درج+كونسولة+بسات+ا", description: "درج كونسولة بسات اسود و بيج — " },
-  { id: 109, categoryId: "engine", name: "طقم خراطيم مبخر 2000 تربو", price: 600, qty: 5, image: "https://placehold.co/600x400/200808/FF4444?text=طقم+خراطيم+مبخر+20", description: "طقم خراطيم مبخر 2000 تربو — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 109, categoryId: "engine", name: "طقم خراطيم مبخر 2000 تربو", price: 600, qty: 5, image: "https://placehold.co/600x400/200808/FF4444?text=طقم+خراطيم+مبخر+20", description: "طقم خراطيم مبخر 2000 تربو — الكمية المتاحة: 5" },
   { id: 110, categoryId: "body", name: "طقم فوج بسات B6", price: 1000, qty: 1, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+فوج+بسات+B6", description: "طقم فوج بسات B6 — " },
   { id: 111, categoryId: "body", name: "طقم فوج جولف 6", price: 1350, qty: 1, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+فوج+جولف+6", description: "طقم فوج جولف 6 — " },
   { id: 112, categoryId: "body", name: "طقم فوج جولف 5", price: 1000, qty: 1, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+فوج+جولف+5", description: "طقم فوج جولف 5 — " },
   { id: 113, categoryId: "body", name: "طقم باغة فانوس خلفي A7", price: 2000, qty: 1, image: "https://placehold.co/600x400/101820/FF9977?text=طقم+باغة+فانوس+خلف", description: "طقم باغة فانوس خلفي A7 — " },
   { id: 114, categoryId: "cooling", name: "خرطوم سيرفو A5", price: 850, qty: 1, image: "https://placehold.co/600x400/081820/44AAFF?text=خرطوم+سيرفو+A5", description: "خرطوم سيرفو A5 — " },
-  { id: 115, categoryId: "body", name: "مسمار عجل", price: 100, qty: 6, image: "https://placehold.co/600x400/101820/FF9977?text=مسمار+عجل", description: "مسمار عجل — ", badge: "متوفر" },
+  { id: 115, categoryId: "body", name: "مسمار عجل", price: 100, qty: 6, image: "https://placehold.co/600x400/101820/FF9977?text=مسمار+عجل", description: "مسمار عجل — " },
   { id: 116, categoryId: "engine", name: "بلية دينامو INNA A7", price: 350, qty: 1, image: "https://placehold.co/600x400/200808/FF4444?text=بلية+دينامو+INNA+A", description: "بلية دينامو INNA A7 — " },
   { id: 117, categoryId: "brakes", name: "طقم تيل خلفي نيو جيتا", price: 850, qty: 1, image: "https://placehold.co/600x400/080820/5577FF?text=طقم+تيل+خلفي+نيو+ج", description: "طقم تيل خلفي نيو جيتا — " },
   { id: 118, categoryId: "engine", name: "جلبة بلحة رابيد", price: 250, qty: 2, image: "https://placehold.co/600x400/200808/FF4444?text=جلبة+بلحة+رابيد", description: "جلبة بلحة رابيد — " },
@@ -1404,7 +1500,7 @@ const PRODUCTS = [
   { id: 145, categoryId: "fuel", name: "فلتر بنزين 4 بار تركي", price: 465, qty: 2, image: "https://placehold.co/600x400/180810/FF6644?text=فلتر+بنزين+4+بار+ت", description: "فلتر بنزين 4 بار تركي — " },
   { id: 146, categoryId: "fuel", name: "فلتر بنزين 6 بار تركي", price: 500, qty: 4, image: "https://placehold.co/600x400/180810/FF6644?text=فلتر+بنزين+6+بار+ت", description: "فلتر بنزين 6 بار تركي — " },
   { id: 147, categoryId: "fuel", name: "فلتر بنزين 4 بار علبة بيج", price: 500, qty: 4, image: "https://placehold.co/600x400/180810/FF6644?text=فلتر+بنزين+4+بار+ع", description: "فلتر بنزين 4 بار علبة بيج — " },
-  { id: 148, categoryId: "electrical", name: "حساس تربو تلاتة مسمار", price: 1750, qty: 5, image: "https://placehold.co/600x400/141408/FFCC22?text=حساس+تربو+تلاتة+مس", description: "حساس تربو تلاتة مسمار — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 148, categoryId: "electrical", name: "حساس تربو تلاتة مسمار", price: 1750, qty: 5, image: "https://placehold.co/600x400/141408/FFCC22?text=حساس+تربو+تلاتة+مس", description: "حساس تربو تلاتة مسمار — الكمية المتاحة: 5" },
   { id: 149, categoryId: "cooling", name: "قربة مياه A5", price: 525, qty: 1, image: "https://placehold.co/600x400/081820/44AAFF?text=قربة+مياه+A5", description: "قربة مياه A5 — " },
   { id: 150, categoryId: "transmission", name: "كوبلن خارجي CTS الماني", price: 2000, qty: 2, image: "https://placehold.co/600x400/181808/FFAA44?text=كوبلن+خارجي+CTS+ال", description: "كوبلن خارجي CTS الماني — " },
   { id: 151, categoryId: "transmission", name: "كوبلن 2000 تيربو 6 غيار DSG    GSB", price: 1800, qty: 2, image: "https://placehold.co/600x400/181808/FFAA44?text=كوبلن+2000+تيربو+6", description: "كوبلن 2000 تيربو 6 غيار DSG    GSB — " },
@@ -1421,7 +1517,7 @@ const PRODUCTS = [
   { id: 162, categoryId: "transmission", name: "كاوتش كوبلن خارجي 2000 تربو", price: 620, qty: 3, image: "https://placehold.co/600x400/181808/FFAA44?text=كاوتش+كوبلن+خارجي+", description: "كاوتش كوبلن خارجي 2000 تربو — " },
   { id: 163, categoryId: "cooling", name: "لتر مياه حمرا هيبو", price: 500, qty: 4, image: "https://placehold.co/600x400/081820/44AAFF?text=لتر+مياه+حمرا+هيبو", description: "لتر مياه حمرا هيبو — " },
   { id: 164, categoryId: "transmission", name: "لتر زيت فتيس ابيض DSG     FEBI", price: 630, qty: 4, image: "https://placehold.co/600x400/181808/FFAA44?text=لتر+زيت+فتيس+ابيض+", description: "لتر زيت فتيس ابيض DSG     FEBI — " },
-  { id: 165, categoryId: "transmission", name: "لتر زيت فتيس احمر FEBI", price: 500, qty: 5, image: "https://placehold.co/600x400/181808/FFAA44?text=لتر+زيت+فتيس+احمر+", description: "لتر زيت فتيس احمر FEBI — الكمية المتاحة: 5", badge: "متوفر" },
+  { id: 165, categoryId: "transmission", name: "لتر زيت فتيس احمر FEBI", price: 500, qty: 5, image: "https://placehold.co/600x400/181808/FFAA44?text=لتر+زيت+فتيس+احمر+", description: "لتر زيت فتيس احمر FEBI — الكمية المتاحة: 5" },
   { id: 166, categoryId: "suspension", name: "طقم مساعدين ماليزي 2000 تربو , بسات ماليزي", price: 4650, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=طقم+مساعدين+ماليزي", description: "طقم مساعدين ماليزي 2000 تربو , بسات ماليزي — " },
   { id: 167, categoryId: "suspension", name: "طقم مساعدين امامي A5 ماليزي", price: 3975, qty: 2, image: "https://placehold.co/600x400/081818/44CCAA?text=طقم+مساعدين+امامي+", description: "طقم مساعدين امامي A5 ماليزي — " },
   { id: 168, categoryId: "suspension", name: "مساعدين امامي 1400 / 1600 A7 ماليزي", price: 4600, qty: 1, image: "https://placehold.co/600x400/081818/44CCAA?text=مساعدين+امامي+1400", description: "مساعدين امامي 1400 / 1600 A7 ماليزي — " },
@@ -1446,8 +1542,24 @@ const PRODUCTS = [
 ];
 
 let cart = [];
+let favorites = JSON.parse(localStorage.getItem('revora_favorites') || '[]');
 let activeCat = "all";
 let modalProductId = null;
+
+if (Array.isArray(window.REVORA_PRODUCTS) && window.REVORA_PRODUCTS.length) {
+  const normalized = window.REVORA_PRODUCTS.map((p, idx) => ({
+    id: Number(p.id) || (idx + 1),
+    categoryId: p.categoryId || "engine",
+    name: p.name || "منتج",
+    price: Number(p.price) || 0,
+    qty: Number(p.qty ?? 1) || 1,
+    image: p.image || "",
+    description: p.description || "لا يوجد وصف حالياً.",
+    badge: p.badge || ""
+  }));
+  PRODUCTS.length = 0;
+  PRODUCTS.push(...normalized);
+}
 
 /* Speed counter animation */
 (function() {
@@ -1495,6 +1607,12 @@ function getSafeImageSrc(src) {
   if (src.includes('placehold.co')) return 'https://placehold.co/600x400/15151b/666?text=REV-ORA';
   return src;
 }
+function favHas(pid) {
+  return favorites.includes(pid);
+}
+function favPersist() {
+  localStorage.setItem('revora_favorites', JSON.stringify(favorites));
+}
 
 /* Categories */
 function renderCats() {
@@ -1535,6 +1653,9 @@ function renderGrid(list) {
           onerror="this.src='https://placehold.co/600x400/15151b/666?text=REV-ORA'">
         <div class="prod-img-name">${p.name}</div>
         ${p.badge ? `<span class="prod-badge">${p.badge}</span>` : ''}
+        <button class="prod-fav ${favHas(p.id) ? 'active' : ''}" onclick="event.stopPropagation();favToggle(${p.id})" title="إضافة للمفضلة">
+          <i class="fas fa-heart"></i>
+        </button>
         <button class="prod-quick" onclick="event.stopPropagation();cartAdd(${p.id})">
           <i class="fas fa-plus"></i> أضف للسلة
         </button>
@@ -1585,7 +1706,9 @@ function modalOpen(pid) {
   document.getElementById('mPrice').textContent = `ج.م ${p.price.toLocaleString('ar-EG')}`;
   document.getElementById('mDesc').textContent = p.description;
   const btn = document.getElementById('mAddBtn');
+  const favBtn = document.getElementById('mFavBtn');
   const inCart = cart.find(i => i.id === pid);
+  favBtn.classList.toggle('active', favHas(pid));
   if (inCart) {
     btn.className = 'modal-add done';
     btn.innerHTML = '<i class="fas fa-check"></i> تم الإضافة للسلة';
@@ -1607,6 +1730,10 @@ function modalAddCart() {
   const btn = document.getElementById('mAddBtn');
   btn.className = 'modal-add done';
   btn.innerHTML = '<i class="fas fa-check"></i> تم الإضافة للسلة!';
+}
+function modalToggleFav() {
+  if (!modalProductId) return;
+  favToggle(modalProductId);
 }
 
 /* Cart */
@@ -1668,7 +1795,72 @@ function cartRefresh() {
   foot.style.display = 'block';
 }
 function cartToggle() {
+  const favBg = document.getElementById('favBg');
+  if (favBg.classList.contains('open')) favBg.classList.remove('open');
   const bg = document.getElementById('cartBg');
+  bg.classList.toggle('open');
+  document.body.style.overflow = bg.classList.contains('open') ? 'hidden' : '';
+}
+
+/* Favorites */
+function favToggle(pid) {
+  const p = PRODUCTS.find(x => x.id === pid);
+  if (!p) return;
+  if (favHas(pid)) {
+    favorites = favorites.filter(id => id !== pid);
+    toast(`تمت الإزالة من المفضلة — ${p.name}`);
+  } else {
+    favorites.push(pid);
+    toast(`تمت الإضافة للمفضلة — ${p.name}`);
+  }
+  favPersist();
+  favRefresh();
+  renderGrid(activeCat === 'all' ? PRODUCTS : PRODUCTS.filter(x => x.categoryId === activeCat));
+  if (modalProductId === pid) {
+    document.getElementById('mFavBtn').classList.toggle('active', favHas(pid));
+  }
+}
+function favRefresh() {
+  const badge = document.getElementById('favBadge');
+  const btn = document.getElementById('favBtn');
+  const body = document.getElementById('favBody');
+  const items = PRODUCTS.filter(p => favHas(p.id));
+  if (items.length > 0) {
+    badge.textContent = items.length;
+    badge.classList.add('show');
+    btn.classList.add('active');
+  } else {
+    badge.classList.remove('show');
+    btn.classList.remove('active');
+  }
+  if (!items.length) {
+    body.innerHTML = `
+      <div class="cart-empty-msg">
+        <i class="fas fa-heart"></i>
+        <p>المفضلة فارغة حالياً</p>
+        <small>اضغط على قلب المنتج لإضافته هنا</small>
+      </div>`;
+    return;
+  }
+  body.innerHTML = items.map(item => `
+    <div class="cart-item">
+      <img class="cart-item-img" src="${getSafeImageSrc(item.image)}" alt="${item.name}"
+        onerror="this.src='https://placehold.co/68x68/1a1a1a/555?text=?'">
+      <div class="cart-item-data">
+        <div class="cart-item-name">${item.name}</div>
+        <div class="cart-item-total">ج.م ${item.price.toLocaleString('ar-EG')}</div>
+        <div class="cart-item-qty-row">
+          <button class="qty-ctrl" onclick="cartAdd(${item.id})"><i class="fas fa-cart-plus"></i></button>
+        </div>
+      </div>
+      <button class="cart-item-del" onclick="favToggle(${item.id})"><i class="fas fa-trash-can"></i></button>
+    </div>
+  `).join('');
+}
+function favTogglePanel() {
+  const cartBg = document.getElementById('cartBg');
+  if (cartBg.classList.contains('open')) cartBg.classList.remove('open');
+  const bg = document.getElementById('favBg');
   bg.classList.toggle('open');
   document.body.style.overflow = bg.classList.contains('open') ? 'hidden' : '';
 }
@@ -1708,6 +1900,8 @@ document.addEventListener('keydown', e => {
     modalClose();
     const bg = document.getElementById('cartBg');
     if (bg.classList.contains('open')) cartToggle();
+    const favBg = document.getElementById('favBg');
+    if (favBg.classList.contains('open')) favTogglePanel();
   }
 });
 
@@ -1721,6 +1915,7 @@ window.addEventListener('load', () => {
 buildFlames();
 renderCats();
 renderGrid(PRODUCTS);
+favRefresh();
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
 </body>
