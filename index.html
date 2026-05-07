@@ -577,6 +577,45 @@ header.scrolled {
   box-shadow: 0 4px 14px rgba(232,0,26,0.25);
 }
 
+.brands-filter {
+  display: flex;
+  gap: 8px;
+  overflow-x: auto;
+  padding: 0 0 12px;
+  scrollbar-width: none;
+}
+.brands-filter::-webkit-scrollbar { display: none; }
+.brand-btn {
+  border: 1px solid var(--glass-border);
+  background: rgba(255,255,255,0.75);
+  color: var(--text-muted);
+  border-radius: 100px;
+  padding: 7px 14px;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: var(--font);
+  font-size: 12px;
+  font-weight: 800;
+  flex-shrink: 0;
+  transition: var(--t-fast);
+}
+.brand-btn img {
+  width: 20px;
+  height: 20px;
+  border-radius: 50%;
+  object-fit: cover;
+}
+.brand-btn:hover {
+  border-color: var(--red);
+  color: var(--red);
+}
+.brand-btn.active {
+  color: #fff;
+  border-color: transparent;
+  background: linear-gradient(135deg, var(--red-deep), var(--red));
+}
+
 /* ══════════════════════════════════════════════
    PRODUCTS SECTION
    ══════════════════════════════════════════════ */
@@ -1153,7 +1192,7 @@ footer {
 
       <!-- ══ Brand Logos (replaced 24/7 stat) ══ -->
       <div class="hero-brands">
-        <div class="hero-brand-item">
+        <div class="hero-brand-item" onclick="selectBrand('vw')" title="عرض منتجات VW" style="cursor:pointer;">
           <img
             src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgwsNWv6L23ucyMfnIXx8M33L1EXqoMsN7RA&s"
             alt="Volkswagen"
@@ -1161,7 +1200,7 @@ footer {
           >
           <span>VW</span>
         </div>
-        <div class="hero-brand-item">
+        <div class="hero-brand-item" onclick="selectBrand('seat')" title="عرض منتجات SEAT" style="cursor:pointer;">
           <img
             src="https://autohaus-habinghorst.de/wp-content/uploads/2021/06/SEAT_Logo_shadow.png"
             alt="SEAT"
@@ -1169,7 +1208,7 @@ footer {
           >
           <span>SEAT</span>
         </div>
-        <div class="hero-brand-item">
+        <div class="hero-brand-item" onclick="selectBrand('skoda')" title="عرض منتجات ŠKODA" style="cursor:pointer;">
           <img
             src="https://fabrikbrands.com/wp-content/uploads/Skoda-Logo-History-13-864x540.png"
             alt="Škoda"
@@ -1177,7 +1216,7 @@ footer {
           >
           <span>ŠKODA</span>
         </div>
-        <div class="hero-brand-item">
+        <div class="hero-brand-item" onclick="selectBrand('audi')" title="عرض منتجات AUDI" style="cursor:pointer;">
           <img
             src="https://fabrikbrands.com/wp-content/uploads/Audi-Logo-1-scaled-1155x770.jpg"
             alt="Audi"
@@ -1209,6 +1248,7 @@ footer {
 <div class="cats-bar">
   <div class="cats-inner">
     <div class="cats-scroll" id="catsScroll"></div>
+    <div class="brands-filter" id="brandsFilter"></div>
   </div>
 </div>
 
@@ -1336,7 +1376,7 @@ const WHATSAPP_NUMBER = "201020571846";
 /* ============================================================
    📂 CATEGORIES
    ============================================================ */
-const CATEGORIES = [
+const DEFAULT_CATEGORIES = [
   { id: "all",          name: "جميع المنتجات",       icon: "fa-th-large" },
   { id: "engine",       name: "المحركات",             icon: "fa-gear" },
   { id: "filters",      name: "الفلاتر",              icon: "fa-filter" },
@@ -1348,6 +1388,14 @@ const CATEGORIES = [
   { id: "driveshaft",   name: "البارات",              icon: "fa-rotate" },
   { id: "cooling",      name: "تبريد وتكييف",         icon: "fa-snowflake" },
   { id: "body",         name: "هيكل وإكسسوار",        icon: "fa-car-side" },
+];
+let CATEGORIES = [...DEFAULT_CATEGORIES];
+const BRAND_FILTERS = [
+  { id: "all",   name: "كل الماركات", logo: "" },
+  { id: "vw",    name: "VW",    logo: "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgwsNWv6L23ucyMfnIXx8M33L1EXqoMsN7RA&s" },
+  { id: "seat",  name: "SEAT",  logo: "https://autohaus-habinghorst.de/wp-content/uploads/2021/06/SEAT_Logo_shadow.png" },
+  { id: "skoda", name: "ŠKODA", logo: "https://fabrikbrands.com/wp-content/uploads/Skoda-Logo-History-13-864x540.png" },
+  { id: "audi",  name: "AUDI",  logo: "https://fabrikbrands.com/wp-content/uploads/Audi-Logo-1-scaled-1155x770.jpg" },
 ];
 
 /* ============================================================
@@ -1544,12 +1592,15 @@ const PRODUCTS = [
 let cart = [];
 let favorites = JSON.parse(localStorage.getItem('revora_favorites') || '[]');
 let activeCat = "all";
+let activeBrand = "all";
 let modalProductId = null;
 
 if (Array.isArray(window.REVORA_PRODUCTS) && window.REVORA_PRODUCTS.length) {
   const normalized = window.REVORA_PRODUCTS.map((p, idx) => ({
     id: Number(p.id) || (idx + 1),
-    categoryId: p.categoryId || "engine",
+    categoryId: p.categoryId || "uncategorized",
+    category: p.category || "",
+    brandId: p.brandId || "other",
     name: p.name || "منتج",
     price: Number(p.price) || 0,
     qty: Number(p.qty ?? 1) || 1,
@@ -1560,6 +1611,35 @@ if (Array.isArray(window.REVORA_PRODUCTS) && window.REVORA_PRODUCTS.length) {
   PRODUCTS.length = 0;
   PRODUCTS.push(...normalized);
 }
+
+function titleizeCategoryId(catId) {
+  const cleaned = String(catId || "").replace(/[-_]+/g, " ").trim();
+  if (!cleaned) return "غير مصنف";
+  return cleaned.charAt(0).toUpperCase() + cleaned.slice(1);
+}
+
+function buildCategoriesFromProducts(products) {
+  const defaultMap = new Map(DEFAULT_CATEGORIES.map((c) => [c.id, c]));
+  const dynamicMap = new Map();
+
+  products.forEach((p) => {
+    const id = (p.categoryId || "").toString().trim();
+    if (!id || id === "all") return;
+    if (dynamicMap.has(id)) return;
+
+    const fromDefault = defaultMap.get(id);
+    const fromProduct = (p.category || "").toString().trim();
+    dynamicMap.set(id, {
+      id,
+      name: fromDefault?.name || fromProduct || titleizeCategoryId(id),
+      icon: fromDefault?.icon || "fa-tag",
+    });
+  });
+
+  CATEGORIES = [defaultMap.get("all"), ...dynamicMap.values()].filter(Boolean);
+}
+
+buildCategoriesFromProducts(PRODUCTS);
 
 /* Speed counter animation */
 (function() {
@@ -1600,7 +1680,11 @@ window.addEventListener('scroll', () => {
 /* Helpers */
 function getCatName(catId) {
   const c = CATEGORIES.find(x => x.id === catId);
-  return c ? c.name : '';
+  return c ? c.name : titleizeCategoryId(catId);
+}
+function getBrandName(brandId) {
+  const b = BRAND_FILTERS.find((x) => x.id === brandId);
+  return b ? b.name : "ماركة غير محددة";
 }
 function getSafeImageSrc(src) {
   if (!src || typeof src !== 'string') return 'https://placehold.co/600x400/15151b/666?text=REV-ORA';
@@ -1613,6 +1697,43 @@ function favHas(pid) {
 function favPersist() {
   localStorage.setItem('revora_favorites', JSON.stringify(favorites));
 }
+function applyFilters(query = "") {
+  const q = (query || "").trim();
+  const ql = q.toLowerCase();
+  let list = PRODUCTS.slice();
+  if (activeCat !== 'all') list = list.filter((p) => p.categoryId === activeCat);
+  if (activeBrand !== 'all') list = list.filter((p) => (p.brandId || 'other') === activeBrand);
+  if (q) {
+    list = list.filter((p) =>
+      p.name.toLowerCase().includes(ql) ||
+      p.description.toLowerCase().includes(ql) ||
+      getCatName(p.categoryId).includes(q) ||
+      getBrandName(p.brandId || "other").toLowerCase().includes(ql)
+    );
+  }
+  return list;
+}
+function updateSectionTitle(isSearch = false) {
+  const catName = getCatName(activeCat);
+  const brandName = getBrandName(activeBrand);
+  if (isSearch) {
+    document.getElementById('secTitle').textContent = 'نتائج البحث';
+    return;
+  }
+  if (activeCat === 'all' && activeBrand === 'all') {
+    document.getElementById('secTitle').textContent = 'جميع المنتجات';
+    return;
+  }
+  if (activeCat === 'all') {
+    document.getElementById('secTitle').textContent = `منتجات ${brandName}`;
+    return;
+  }
+  if (activeBrand === 'all') {
+    document.getElementById('secTitle').textContent = catName;
+    return;
+  }
+  document.getElementById('secTitle').textContent = `${catName} - ${brandName}`;
+}
 
 /* Categories */
 function renderCats() {
@@ -1622,14 +1743,36 @@ function renderCats() {
     </button>
   `).join('');
 }
+function renderBrands() {
+  document.getElementById('brandsFilter').innerHTML = BRAND_FILTERS.map((b) => `
+    <button class="brand-btn ${b.id === activeBrand ? 'active' : ''}" onclick="selectBrand('${b.id}')">
+      ${b.logo ? `<img src="${b.logo}" alt="${b.name}" onerror="this.style.display='none'">` : '<i class="fas fa-layer-group"></i>'}
+      <span>${b.name}</span>
+    </button>
+  `).join('');
+}
 function selectCat(catId) {
   activeCat = catId;
+  // Keep UX simple: category browsing always shows all brands.
+  activeBrand = 'all';
   document.getElementById('searchInput').value = '';
   document.getElementById('searchInfo').style.display = 'none';
   renderCats();
-  const filtered = catId === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.categoryId === catId);
-  document.getElementById('secTitle').textContent = getCatName(catId);
-  renderGrid(filtered);
+  renderBrands();
+  updateSectionTitle(false);
+  renderGrid(applyFilters());
+  document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
+}
+function selectBrand(brandId) {
+  activeBrand = brandId;
+  // Brand browsing starts from all categories to avoid empty views.
+  activeCat = 'all';
+  document.getElementById('searchInput').value = '';
+  document.getElementById('searchInfo').style.display = 'none';
+  renderCats();
+  renderBrands();
+  updateSectionTitle(false);
+  renderGrid(applyFilters());
   document.getElementById('productsSection').scrollIntoView({ behavior: 'smooth', block: 'start' });
 }
 
@@ -1678,19 +1821,14 @@ document.getElementById('searchInput').addEventListener('input', function () {
   const info = document.getElementById('searchInfo');
   if (!q) {
     info.style.display = 'none';
-    document.getElementById('secTitle').textContent = getCatName(activeCat);
-    renderGrid(activeCat === 'all' ? PRODUCTS : PRODUCTS.filter(p => p.categoryId === activeCat));
+    updateSectionTitle(false);
+    renderGrid(applyFilters());
     return;
   }
-  const ql = q.toLowerCase();
-  const res = PRODUCTS.filter(p =>
-    p.name.toLowerCase().includes(ql) ||
-    p.description.toLowerCase().includes(ql) ||
-    getCatName(p.categoryId).includes(q)
-  );
+  const res = applyFilters(q);
   info.style.display = 'block';
   info.innerHTML = `نتائج البحث عن <b>"${q}"</b> — ${res.length} نتيجة`;
-  document.getElementById('secTitle').textContent = 'نتائج البحث';
+  updateSectionTitle(true);
   renderGrid(res);
 });
 
@@ -1815,7 +1953,7 @@ function favToggle(pid) {
   }
   favPersist();
   favRefresh();
-  renderGrid(activeCat === 'all' ? PRODUCTS : PRODUCTS.filter(x => x.categoryId === activeCat));
+  renderGrid(applyFilters(document.getElementById('searchInput').value));
   if (modalProductId === pid) {
     document.getElementById('mFavBtn').classList.toggle('active', favHas(pid));
   }
@@ -1914,7 +2052,9 @@ window.addEventListener('load', () => {
 });
 buildFlames();
 renderCats();
-renderGrid(PRODUCTS);
+renderBrands();
+updateSectionTitle(false);
+renderGrid(applyFilters());
 favRefresh();
 </script>
 <script defer src="/_vercel/insights/script.js"></script>
